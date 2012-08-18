@@ -59,7 +59,7 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
     public void onDisable() {}
  
     @Override
-    public boolean processCommand(CommandSource source, Command cmd, CommandContext context) throws CommandException {
+    public void processCommand(CommandSource source, Command cmd, CommandContext context) throws CommandException {
         String name = cmd.getPreferredName().toLowerCase();
         boolean ld = name.equals("lockdown");
         boolean add = name.equals("ldadd");
@@ -97,7 +97,7 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
             } else {
                 source.sendMessage(ChatStyle.RED, "Usage: /Lockdown Toggle - Toggle Lockdown");
             }
-            return true;
+            return;
         } else if (add) {
             if (args.length < 1) {
                 source.sendMessage(ChatStyle.RED, "Usage: /LdAdd PlayerName - Add PlayerName to the list");
@@ -109,7 +109,7 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
                     source.sendMessage(ChatStyle.RED, "I think not!");
                 }
             }
-            return true;
+            return;
         } else if (remove) {
             if (args.length < 1) {
                 source.sendMessage(ChatStyle.RED, "Usage: /LdRemove PlayerName - Add PlayerName to the list");
@@ -121,9 +121,9 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
                     source.sendMessage(ChatStyle.RED, "I think not!");
                 }
             }
-            return true;
+            return;
         }
-        return false;
+        return;
     }
    
     @EventHandler(order = Order.LATEST_IGNORE_CANCELLED)
