@@ -17,7 +17,7 @@ import org.spout.api.event.Listener;
 import org.spout.api.event.Order;
 import org.spout.api.event.player.PlayerJoinEvent;
 import org.spout.api.exception.CommandException;
-import org.spout.api.player.Player;
+import org.spout.api.entity.Player;
 import org.spout.api.plugin.CommonPlugin;
 import org.spout.api.util.config.yaml.YamlConfiguration;
  

@@ -2,7 +2,7 @@ package com.volumetricpixels.lockdown;
 
 import org.spout.api.event.HandlerList;
 import org.spout.api.event.player.PlayerEvent;
-import org.spout.api.player.Player;
+import org.spout.api.entity.Player;
  
 public class PlayerLockedOutEvent extends PlayerEvent {
    
