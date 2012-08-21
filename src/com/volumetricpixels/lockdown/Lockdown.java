@@ -1,9 +1,9 @@
-package com.volumetricpixels.lockdown;
+package pl.lockdown;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
- 
+
 import org.spout.api.Spout;
 import org.spout.api.chat.ChatSection;
 import org.spout.api.chat.style.ChatStyle;
@@ -20,66 +20,62 @@ import org.spout.api.exception.CommandException;
 import org.spout.api.entity.Player;
 import org.spout.api.plugin.CommonPlugin;
 import org.spout.api.util.config.yaml.YamlConfiguration;
- 
+
 public class Lockdown extends CommonPlugin implements Listener, CommandExecutor {
-   
+    
     private EventManager em;
     private YamlConfiguration config;
-   
+    
     // Config fields
     private List<String> bypassedPlayers;
     private boolean lockdown;
     private String lockedOutMessage;
- 
+
     @Override
     public void onEnable() {
         LockdownAPI.setPlugin(this);
         this.config = new YamlConfiguration(new File(this.getDataFolder(), "config.yml"));
-       
+        
         try {
             if (!config.getFile().exists()) {
                 config.getFile().createNewFile();
             }
         } catch (Exception e) {}
-       
+        
         if (!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
-       
+        
         refresh();
-       
+        
         this.em = Spout.getEventManager();
         em.registerEvents(this, this);
         this.getEngine().getRootCommand().addSubCommand(this, "lockdown").setExecutor(this);
         this.getEngine().getRootCommand().addSubCommand(this, "ldadd").setExecutor(this);
         this.getEngine().getRootCommand().addSubCommand(this, "ldremove").setExecutor(this);
     }
- 
+
     @Override
     public void onDisable() {}
- 
+
     @Override
     public void processCommand(CommandSource source, Command cmd, CommandContext context) throws CommandException {
         String name = cmd.getPreferredName().toLowerCase();
         boolean ld = name.equals("lockdown");
         boolean add = name.equals("ldadd");
         boolean remove = name.equals("ldremove");
-       
+        
         List<ChatSection> csl = context.getRawArgs();
-        String[] args = new String[csl.size()];
-        for (int i = 0; i < csl.size(); i++) {
-            args[i] = csl.get(i).getPlainString();
-        }
-       
+        
         if (ld) {
-            if (args.length < 1) {
+            if (csl.size() < 1) {
                 source.sendMessage(ChatStyle.RED, "Usage: /Lockdown Toggle - Toggle Lockdown");
-            } else if (args[0].equalsIgnoreCase("toggle")) {
+            } else if (csl.get(0).getPlainString().equalsIgnoreCase("toggle")) {
                 if (source.hasPermission("lockdown.toggle")) {
                     lockdown = !lockdown;
                     config.getNode("Lockdown").setValue(lockdown);
                     source.sendMessage(ChatStyle.GRAY, "Lockdown Activated: " + String.valueOf(lockdown));
-                   
+                    
                     if (lockdown) {
                         getLogger().info("Lockdown activated! Kicking players not on list!");
                         getLogger().info("Activated by: " + source.getName());
@@ -99,33 +95,32 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
             }
             return;
         } else if (add) {
-            if (args.length < 1) {
+            if (csl.size() < 1) {
                 source.sendMessage(ChatStyle.RED, "Usage: /LdAdd PlayerName - Add PlayerName to the list");
             } else {
                 if (source.hasPermission("lockdown.editlist")) {
-                    add(args[0]);
-                    source.sendMessage("Added: " + args[0] + " to Lockdown bypass list!");
+                    add(csl.get(0).getPlainString());
+                    source.sendMessage("Added: " + csl.get(0).getPlainString() + " to Lockdown bypass list!");
                 } else {
                     source.sendMessage(ChatStyle.RED, "I think not!");
                 }
             }
             return;
         } else if (remove) {
-            if (args.length < 1) {
+            if (csl.size() < 1) {
                 source.sendMessage(ChatStyle.RED, "Usage: /LdRemove PlayerName - Add PlayerName to the list");
             } else {
                 if (source.hasPermission("lockdown.editlist")) {
-                    remove(args[0]);
-                    source.sendMessage("Removed: " + args[0] + " from Lockdown bypass list!");
+                    remove(csl.get(0).getPlainString());
+                    source.sendMessage("Removed: " + csl.get(0).getPlainString() + " from Lockdown bypass list!");
                 } else {
                     source.sendMessage(ChatStyle.RED, "I think not!");
                 }
             }
             return;
         }
-        return;
     }
-   
+    
     @EventHandler(order = Order.LATEST_IGNORE_CANCELLED)
     public void handleJoin(PlayerJoinEvent e) {
         refresh();
@@ -138,17 +133,17 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
             }
         }
     }
-   
+    
     void remove(Object toRemove) {
         bypassedPlayers.remove(toRemove);
         refresh();
     }
-   
+    
     void add(String toAdd) {
         bypassedPlayers.add(toAdd);
         refresh();
     }
-   
+    
     private void refresh() {
         if ((this.bypassedPlayers = config.getNode("Bypassed-Players").getStringList()) == null) {
             config.getNode("Bypassed-Players").setValue(new ArrayList<String>());
@@ -169,5 +164,5 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
             config.getNode("Locked-Out-Message").setValue(lockedOutMessage);
         }
     }
-   
+    
 }
