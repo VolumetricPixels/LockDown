@@ -1,4 +1,4 @@
-package pl.lockdown;
+package com.volumetricpixels.lockdown;
 
 import org.spout.api.Spout;
 import org.spout.api.scheduler.TaskPriority;

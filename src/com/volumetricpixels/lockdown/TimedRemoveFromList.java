@@ -1,4 +1,4 @@
-package pl.lockdown;
+package com.volumetricpixels.lockdown;
 
 class TimedRemoveFromList implements Runnable {
     

@@ -1,4 +1,4 @@
-package pl.lockdown;
+package com.volumetricpixels.lockdown;
 
 import org.spout.api.event.HandlerList;
 import org.spout.api.event.player.PlayerEvent;

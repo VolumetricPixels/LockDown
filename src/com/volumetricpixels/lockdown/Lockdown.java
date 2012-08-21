@@ -1,4 +1,4 @@
-package pl.lockdown;
+package com.volumetricpixels.lockdown;
 
 import java.io.File;
 import java.util.ArrayList;
