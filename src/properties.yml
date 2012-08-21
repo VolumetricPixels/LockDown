@@ -3,7 +3,7 @@ version: 1.0
 description: Allows for server lockdown with exceptions!
 
 author: DziNeIT
-website: http://dzineit.github.com/
+website: http://volumetricpixels.com/
 
-main: pl.lockdown.Lockdown
+main: com.volumetricpixels.lockdown.Lockdown
 platform: SERVER
