@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.spout.api.Spout;
+import org.spout.api.Server;
 import org.spout.api.chat.ChatSection;
 import org.spout.api.chat.style.ChatStyle;
 import org.spout.api.command.Command;
@@ -79,7 +80,7 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
                     if (lockdown) {
                         getLogger().info("Lockdown activated! Kicking players not on list!");
                         getLogger().info("Activated by: " + source.getName());
-                        for (Player p : this.getEngine().getOnlinePlayers()) {
+                        for (Player p : ((Server) this.getEngine()).getOnlinePlayers()) {
                             if (!bypassedPlayers.contains(p.getName())) {
                                 p.kick(lockedOutMessage);
                             }
