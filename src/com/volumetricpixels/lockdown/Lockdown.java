@@ -23,32 +23,35 @@ import org.spout.api.plugin.CommonPlugin;
 import org.spout.api.util.config.yaml.YamlConfiguration;
 
 public class Lockdown extends CommonPlugin implements Listener, CommandExecutor {
-    
     private EventManager em;
     private YamlConfiguration config;
-    
+
     // Config fields
     private List<String> bypassedPlayers;
     private boolean lockdown;
     private String lockedOutMessage;
+    private boolean invertIncludedWorlds;
+    private List<String> includedWorlds;
+    private String defaultWorld;
 
     @Override
     public void onEnable() {
         LockdownAPI.setPlugin(this);
         this.config = new YamlConfiguration(new File(this.getDataFolder(), "config.yml"));
-        
+
         try {
             if (!config.getFile().exists()) {
                 config.getFile().createNewFile();
             }
-        } catch (Exception e) {}
-        
+        } catch (Exception e) {
+        }
+
         if (!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
-        
+
         refresh();
-        
+
         this.em = Spout.getEventManager();
         em.registerEvents(this, this);
         this.getEngine().getRootCommand().addSubCommand(this, "lockdown").setExecutor(this);
@@ -57,7 +60,8 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
     }
 
     @Override
-    public void onDisable() {}
+    public void onDisable() {
+    }
 
     @Override
     public void processCommand(CommandSource source, Command cmd, CommandContext context) throws CommandException {
@@ -65,9 +69,9 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
         boolean ld = name.equals("lockdown");
         boolean add = name.equals("ldadd");
         boolean remove = name.equals("ldremove");
-        
+
         List<ChatSection> csl = context.getRawArgs();
-        
+
         if (ld) {
             if (csl.size() < 1) {
                 source.sendMessage(ChatStyle.RED, "Usage: /Lockdown Toggle - Toggle Lockdown");
@@ -76,7 +80,7 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
                     lockdown = !lockdown;
                     config.getNode("Lockdown").setValue(lockdown);
                     source.sendMessage(ChatStyle.GRAY, "Lockdown Activated: " + String.valueOf(lockdown));
-                    
+
                     if (lockdown) {
                         getLogger().info("Lockdown activated! Kicking players not on list!");
                         getLogger().info("Activated by: " + source.getName());
@@ -121,30 +125,49 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
             return;
         }
     }
-    
+
     @EventHandler(order = Order.LATEST_IGNORE_CANCELLED)
     public void handleJoin(PlayerJoinEvent e) {
+        if (lockdown == false) {
+            return;
+        }
+
         refresh();
+
         Player p = e.getPlayer();
-        if (lockdown) {
-            if (!bypassedPlayers.contains(p.getName())) {
-                p.kick(lockedOutMessage);
-                em.callEvent(new PlayerLockedOutEvent(p));
-                getLogger().info("Locked Out: " + p.getName());
+        String world = p.getWorld().getName();
+
+        if (invertIncludedWorlds && !includedWorlds.contains(world)) {
+            if (bypassedPlayers.contains(p.getName()) == false) {
+                p.teleport(Spout.getEngine().getWorld(defaultWorld).getSpawnPoint().getPosition());
+                p.sendMessage(ChatStyle.RED, "You don't have permission to be in that world!");
+                return;
+            }
+        } else if (!(invertIncludedWorlds) && includedWorlds.contains(world)) {
+            if (bypassedPlayers.contains(p.getName()) == false) {
+                p.teleport(Spout.getEngine().getWorld(defaultWorld).getSpawnPoint().getPosition());
+                p.sendMessage(ChatStyle.RED, "You don't have permission to be in that world!");
+                return;
             }
         }
+
+        if (!bypassedPlayers.contains(p.getName())) {
+            p.kick(lockedOutMessage);
+            em.callEvent(new PlayerLockedOutEvent(p));
+            getLogger().info("Locked Out: " + p.getName());
+        }
     }
-    
+
     void remove(Object toRemove) {
         bypassedPlayers.remove(toRemove);
         refresh();
     }
-    
+
     void add(String toAdd) {
         bypassedPlayers.add(toAdd);
         refresh();
     }
-    
+
     private void refresh() {
         if ((this.bypassedPlayers = config.getNode("Bypassed-Players").getStringList()) == null) {
             config.getNode("Bypassed-Players").setValue(new ArrayList<String>());
@@ -164,6 +187,23 @@ public class Lockdown extends CommonPlugin implements Listener, CommandExecutor 
         } else {
             config.getNode("Locked-Out-Message").setValue(lockedOutMessage);
         }
+        if (String.valueOf((this.invertIncludedWorlds = config.getNode("Included-Worlds-Inverted").getBoolean())) == null) {
+            config.getNode("Included-Worlds-Inverted").setValue(false);
+            refresh();
+        } else {
+            config.getNode("Included-Worlds-Inverted").setValue(invertIncludedWorlds);
+        }
+        if ((this.includedWorlds = config.getNode("Included-Worlds").getStringList()) == null) {
+            config.getNode("Included-Worlds").setValue(new ArrayList<String>());
+            refresh();
+        } else {
+            config.getNode("Included-Worlds").setValue(includedWorlds);
+        }
+        if ((this.defaultWorld = config.getNode("No-Permissions-World").getString()) == null) {
+            config.getNode("No-Permissions-World").setValue("world");
+            refresh();
+        } else {
+            config.getNode("No-Permissions-World").setValue(defaultWorld);
+        }
     }
-    
 }
